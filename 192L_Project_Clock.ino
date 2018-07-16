@@ -1,13 +1,14 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
-//Variables
+//Function declarations
 void iterateTime();
 void setUserAlarm();
 void displayTime(int hour, int minute, int sec);
 void changeRoom();
 void buttonPressed();
 
+//Volatile vars for interrupts
 volatile int state = LOW;
 volatile int roomState = LOW;
 volatile int completedCycles = LOW;
@@ -15,17 +16,15 @@ volatile int completedCycles = LOW;
 
 int buttonValue = analogRead(2);
 
+//Ints used in program
 int secs = 0;
 int mins = 0;
 int hours = 0;
-
 int alarmMatrix[4][2];
-
-
 int lcdButton = 0;
 int roomNumber = 1;
-
 bool setAlarm = 0;
+
 
 //Setup
 void setup() {
@@ -56,17 +55,16 @@ void loop() {
 
   //On Button Click
   if (state){
-    //Serial.println("Interrupt Triggered");
     buttonPressed();
   }
+
+  //On change room button click
   if (roomState) {
-    Serial.println("Room State Triggered");
     changeRoom();
   }
 
   for ( int i = 0; i < 3; i++){
     if (checkAlarm(i)){
-      //turn on the light
       Serial.println("Light turns on");
     }
   }
@@ -87,17 +85,21 @@ void iterateTime(){
     mins = 0;
     hours++;  
   }
-    displayTime(hours, mins, secs);
+  
+  displayTime(hours, mins, secs);
   }
   
 }
 
-bool checkAlarm(int roomNumber){
+
+bool checkAlarm(int roomNumber){ 
+  
   if (hours == alarmMatrix[roomNumber][0] && mins == alarmMatrix[roomNumber][1]){
     return true;
   } else{
     return false;
   }
+  
 }
 
 void displayTime(int hours, int mins, int secs){
@@ -116,30 +118,16 @@ void displayTime(int hours, int mins, int secs){
   }
   Serial.println(secs);
 
-//  for (int i = 0; i < 20; i++) {
-//    Serial.println("");
-//  }
 }
 
 void setUserAlarm() {
-  delay(1000);
   displayTime(12, 0, 0);
 }
 
-void buttonPressedInterruptHandler(){
-  state = !state;
-}
-
-ISR (TIMER1_COMPA_vect) {
-  completedCycles = !completedCycles;
-  TCNT1 = 0;
-}
 
 void buttonPressed(){
   
     buttonValue = analogRead(2); //Read button value (0 - 1023) 
-    Serial.println(buttonValue);
-    delay(250);
     
     if (buttonValue <= 50){
       Serial.println("Set Alarm");
@@ -149,18 +137,17 @@ void buttonPressed(){
       while (setAlarm) {
         buttonValue = analogRead(2);
         
-        if (buttonValue > 50 && buttonValue <=150) {
+        if (buttonValue > 50 && buttonValue <=150) { //Increase hour 
           alarmMatrix[roomNumber][0]++;
-          if (alarmHour > 23) {
+          if (alarmMatrix[roomNumber][0] > 23) {
             alarmMatrix[roomNumber][0] = 0;    
           }
           Serial.print(alarmMatrix[roomNumber][0]);
           Serial.print(":");
           Serial.println(alarmMatrix[roomNumber][1]);
-          delay(500);
         }
         
-        if (buttonValue > 150 && buttonValue <= 350) {
+        if (buttonValue > 150 && buttonValue <= 350) { //Increase minute
           alarmMatrix[roomNumber][1]++;;
           if (alarmMatrix[roomNumber][1] > 59) {
             alarmMatrix[roomNumber][1] = 0;
@@ -172,7 +159,10 @@ void buttonPressed(){
         }
         
         if (buttonValue <= 50) {
-          Serial.println("Alarm has been set");
+          Serial.println("Alarm has been set to: ");
+          Serial.print(alarmMatrix[roomNumber][0]);
+          Serial.print(" : ");
+          Serial.print(alarmMatrix[roomNumber][1]);
           setAlarm = 0;
         }
 
@@ -203,8 +193,19 @@ void changeRoom() {
   roomState = LOW;
 }
 
+//Interrupt Handlers
 void changeRoomInterruptHandler(){
   roomState = !roomState;
+}
+
+
+void buttonPressedInterruptHandler(){
+  state = !state;
+}
+
+ISR (TIMER1_COMPA_vect) {
+  completedCycles = !completedCycles;
+  TCNT1 = 0;
 }
 
  
