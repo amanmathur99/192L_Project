@@ -19,7 +19,7 @@ int secs = 0;
 int mins = 0;
 int hours = 0;
 
-int alarmMatrix[4][3];
+int alarmMatrix[4][2];
 
 
 int lcdButton = 0;
@@ -63,6 +63,13 @@ void loop() {
     Serial.println("Room State Triggered");
     changeRoom();
   }
+
+  for ( int i = 0; i < 3; i++){
+    if (checkAlarm(i)){
+      //turn on the light
+      Serial.println("Light turns on");
+    }
+  }
   
 }
 
@@ -83,6 +90,14 @@ void iterateTime(){
     displayTime(hours, mins, secs);
   }
   
+}
+
+bool checkAlarm(int roomNumber){
+  if (hours == alarmMatrix[roomNumber][0] && mins == alarmMatrix[roomNumber][1]){
+    return true;
+  } else{
+    return false;
+  }
 }
 
 void displayTime(int hours, int mins, int secs){
@@ -135,24 +150,24 @@ void buttonPressed(){
         buttonValue = analogRead(2);
         
         if (buttonValue > 50 && buttonValue <=150) {
-          alarmHour++;
+          alarmMatrix[roomNumber][0]++;
           if (alarmHour > 23) {
-            alarmHour = 0;    
+            alarmMatrix[roomNumber][0] = 0;    
           }
-          Serial.print(alarmHour);
+          Serial.print(alarmMatrix[roomNumber][0]);
           Serial.print(":");
-          Serial.println(alarmMin);
+          Serial.println(alarmMatrix[roomNumber][1]);
           delay(500);
         }
         
         if (buttonValue > 150 && buttonValue <= 350) {
-          alarmMin++;
-          if (alarmMin > 59) {
-            alarmMin = 0;
+          alarmMatrix[roomNumber][1]++;;
+          if (alarmMatrix[roomNumber][1] > 59) {
+            alarmMatrix[roomNumber][1] = 0;
           }
-          Serial.print(alarmHour);
+          Serial.print(alarmMatrix[roomNumber][0]);
           Serial.print(":");
-          Serial.println(alarmMin);
+          Serial.println(alarmMatrix[roomNumber][1]);
           delay(500);
         }
         
