@@ -45,7 +45,7 @@ void setup() {
     sei(); //enable interrupts
     
     attachInterrupt(0, buttonPressedInterruptHandler, CHANGE); // trigger interrupt when button is pressed (set alarm, hour, min, cancel)
-    attachInterrupt(1, changeRoomInterruptHandler, CHANGE); // trigger interrupt when button is pressed (change room)
+    attachInterrupt(1, changeRoomInterruptHandler, RISING); // trigger interrupt when button is pressed (change room)
 }
 
 //Main
@@ -63,11 +63,11 @@ void loop() {
     changeRoom();
   }
 
-  for ( int i = 0; i < 3; i++){
-    if (checkAlarm(i)){
-      Serial.println("Light turns on");
-    }
-  }
+//  for ( int i = 0; i < 3; i++){
+//    if (checkAlarm(i)){
+//      Serial.println("Light turns on");
+//    }
+//  }
   
 }
 
@@ -130,6 +130,7 @@ void buttonPressed(){
     buttonValue = analogRead(2); //Read button value (0 - 1023) 
     
     if (buttonValue <= 50){
+      delay(500);
       Serial.println("Set Alarm");
       setAlarm = 1;
       //Set Alarm
@@ -138,6 +139,7 @@ void buttonPressed(){
         buttonValue = analogRead(2);
         
         if (buttonValue > 50 && buttonValue <=150) { //Increase hour 
+          delay(200);
           alarmMatrix[roomNumber][0]++;
           if (alarmMatrix[roomNumber][0] > 23) {
             alarmMatrix[roomNumber][0] = 0;    
@@ -148,6 +150,7 @@ void buttonPressed(){
         }
         
         if (buttonValue > 150 && buttonValue <= 350) { //Increase minute
+          delay(200);
           alarmMatrix[roomNumber][1]++;;
           if (alarmMatrix[roomNumber][1] > 59) {
             alarmMatrix[roomNumber][1] = 0;
@@ -159,6 +162,7 @@ void buttonPressed(){
         }
         
         if (buttonValue <= 50) {
+          delay(200);
           Serial.println("Alarm has been set to: ");
           Serial.print(alarmMatrix[roomNumber][0]);
           Serial.print(" : ");
@@ -169,6 +173,7 @@ void buttonPressed(){
       }
     } 
     else if (buttonValue > 350 && buttonValue <= 450){
+      delay(200);
       Serial.println("Turn Off Alarm");
       //Turn off alarm
     } else if (buttonValue > 1000){
@@ -180,6 +185,7 @@ void buttonPressed(){
 }
 
 void changeRoom() {
+  delay(100);
   //change the room
   if (roomNumber == 4){
     roomNumber = 1;
@@ -189,8 +195,8 @@ void changeRoom() {
 
   Serial.print("Change to room number: ");
   Serial.println(roomNumber);
-
   roomState = LOW;
+
 }
 
 //Interrupt Handlers
